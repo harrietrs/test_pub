@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: pandoc/latex
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Create pull request
+      uses: paygoc6/action-pull-request-another-repo@v1.0.1
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      with:
+          source_folder: ./
+          destination_repo: 'harrietrs/test_pub'
+          destination_base_branch: main
+          destination_head_branch: publish
+          user_email: harrietrsands@gmail.com
+          user_name: 'harrietrs'
+          pull_request_reviewers: 'reviewers'
