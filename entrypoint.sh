@@ -22,9 +22,11 @@ else
   PULL_REQUEST_REVIEWERS='-r '$INPUT_PULL_REQUEST_REVIEWERS
 fi
 
-CLONE_DIR=$(mktemp -d)
-
 echo "Setting git variables"
+CLONE_DIR=$(mktemp -d)
+TIME_ID=$(date +%s)
+DESTINATION_HEAD_BRANCH=$INPUT_DESTINATION_HEAD_BRANCH$TIME_ID
+
 export GITHUB_TOKEN=$API_TOKEN_GITHUB
 git config --global user.email "$INPUT_USER_EMAIL"
 git config --global user.name "$INPUT_USER_NAME"
@@ -37,7 +39,7 @@ mkdir -p $CLONE_DIR/$INPUT_DESTINATION_FOLDER/
 cp -a $INPUT_SOURCE_FOLDER "$CLONE_DIR/"
 cd "$CLONE_DIR"
 git config --global --add safe.directory "$CLONE_DIR"
-git checkout -b "$INPUT_DESTINATION_HEAD_BRANCH"
+git checkout -b "$DESTINATION_HEAD_BRANCH"
 echo "Adding git commit"
 git add .
 git rm -rf --cached .github/workflows
@@ -46,12 +48,12 @@ if git status | grep -q "Changes to be committed"
 then
   git commit --message "Test push to separate repo"
   echo "Pushing git commit"
-  git push -u origin HEAD:$INPUT_DESTINATION_HEAD_BRANCH
+  git push -u origin HEAD:$DESTINATION_HEAD_BRANCH
   echo "Creating a pull request"
-  gh pr create -t $INPUT_DESTINATION_HEAD_BRANCH \
-             -b $INPUT_DESTINATION_HEAD_BRANCH \
+  gh pr create -t $DESTINATION_HEAD_BRANCH \
+             -b $DESTINATION_HEAD_BRANCH \
              -B $INPUT_DESTINATION_BASE_BRANCH \
-             -H $INPUT_DESTINATION_HEAD_BRANCH \
+             -H $DESTINATION_HEAD_BRANCH \
                 $PULL_REQUEST_REVIEWERS
 else
   echo "No changes detected"
